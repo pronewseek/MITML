@@ -22,7 +22,7 @@ def decoder_pic_path(fname):
 
 
 class VCM(object):
-    root = '/data/VCM-HITSZ/'
+    root = '/data2/Datasets/CMReID/HITSZ-VCM/'
     # training data
     train_name_path = osp.join(root,'info/train_name.txt')
     track_train_info_path = osp.join(root,'info/track_train_info.txt')
@@ -198,7 +198,7 @@ class VCM(object):
 
             if m == 1:
                 img_names = names[start_index-1:end_index]
-                img_ir_paths = [osp.join(self.root,decoder_pic_path(img_name)) for img_name in img_names]
+                img_ir_paths = [osp.join(self.root,'Train', decoder_pic_path(img_name)) for img_name in img_names] # 注意训练集的图片路径。
                 if len(img_ir_paths) >= min_seq_len:
                     img_ir_paths = tuple(img_ir_paths)
                     ir_label.append(pid)
@@ -207,7 +207,7 @@ class VCM(object):
                     num_imgs_per_tracklet_ir.append(len(img_ir_paths))
             else:
                 img_names = names[start_index-1:end_index]
-                img_rgb_paths = [osp.join(self.root,decoder_pic_path(img_name)) for img_name in img_names]
+                img_rgb_paths = [osp.join(self.root,'Train', decoder_pic_path(img_name)) for img_name in img_names] # 注意训练集的图片路径。
                 if len(img_rgb_paths) >= min_seq_len:
                     img_rgb_paths = tuple(img_rgb_paths)
                     rgb_label.append(pid)
@@ -238,7 +238,7 @@ class VCM(object):
             if relabel: pid = pid2label[pid]
 
             img_names = names[start_index-1:end_index]
-            img_paths = [osp.join(self.root,decoder_pic_path(img_name)) for img_name in img_names]
+            img_paths = [osp.join(self.root,'Test', decoder_pic_path(img_name)) for img_name in img_names] # 注意测试集的图片路径。
             if len(img_paths) >= min_seq_len:
                 img_paths = tuple(img_paths)
                 tracklets.append((img_paths, pid, camid))
