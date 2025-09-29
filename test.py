@@ -35,7 +35,7 @@ parser.add_argument('--resume', '-r', default='CUHK60_drop_0.2_2_8_lr_0.1_seed_0
 parser.add_argument('--test-only', action='store_true', help='test only')
 parser.add_argument('--model_path', default='./save_model/', type=str,
                     help='model save path')
-parser.add_argument('--save_epoch', default=20, type=int,
+parser.add_argument('--save_epoch', default=10, type=int,
                     metavar='s', help='save model every 10 epochs')
 parser.add_argument('--log_path', default='log/', type=str,
                     help='log save path')

@@ -35,7 +35,7 @@ parser.add_argument('--resume', '-r', default='', type=str,
 parser.add_argument('--test-only', action='store_true', help='test only')
 parser.add_argument('--model_path', default='save_model/', type=str,
                     help='model save path')
-parser.add_argument('--save_epoch', default=20, type=int,
+parser.add_argument('--save_epoch', default=10, type=int,
                     metavar='s', help='save model every 10 epochs')
 parser.add_argument('--log_path', default='log/', type=str,
                     help='log save path')
@@ -49,7 +49,7 @@ parser.add_argument('--img_w', default=144, type=int,
                     metavar='imgw', help='img width')
 parser.add_argument('--img_h', default=288, type=int,
                     metavar='imgh', help='img height')
-parser.add_argument('--batch-size', default=8, type=int,
+parser.add_argument('--batch-size', default=2, type=int,
                     metavar='B', help='training batch size')
 parser.add_argument('--test-batch', default=64, type=int,
                     metavar='tb', help='testing batch size')
@@ -500,7 +500,7 @@ def test(epoch):
 # training
 print('==> Start Training...')
 
-for epoch in range(start_epoch, 200 - start_epoch):
+for epoch in range(start_epoch, 200):
 
     print('==> Preparing Data Loader...')
     sampler = IdentitySampler(data_set.ir_label, data_set.rgb_label, rgb_pos, ir_pos, args.num_pos, args.batch_size)
