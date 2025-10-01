@@ -119,15 +119,15 @@ class base_resnet(nn.Module):
         # avg pooling to global pooling
         model_base.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.base = model_base
-        # self.layer4 = copy.deepcopy(self.base.layer4)
+        self.layer4 = copy.deepcopy(self.base.layer4)
 
     def forward(self, x):
         x = self.base.layer1(x)
         x = self.base.layer2(x)
         x = self.base.layer3(x)
-        # t_x = self.layer4(x)
+        t_x = self.layer4(x)
         x = self.base.layer4(x)
-        return x
+        return x,t_x
 
 class TemporalMemory(nn.Module):
     def __init__(self, feat_dim=2048, mem_size=100, margin=1, seq_len=6):
@@ -300,7 +300,7 @@ class embed_net(nn.Module):
         elif modal == 2:
             x = self.thermal_module(x2)
 
-        x, = self.base_resnet(x)
+        x,_ = self.base_resnet(x)
         # x,x_t = self.base_resnet(x)
         # x_l = self.avgpool(x_t).squeeze()
         # x_l = x_l.view(x_l.size(0) // t, t, -1).permute(1, 0, 2)

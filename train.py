@@ -30,7 +30,7 @@ parser.add_argument('--lr', default=0.1 , type=float, help='learning rate, 0.000
 parser.add_argument('--optim', default='sgd', type=str, help='optimizer')
 parser.add_argument('--arch', default='resnet50', type=str,
                     help='network baseline:resnet50')
-parser.add_argument('--resume', '-r', default='', type=str,
+parser.add_argument('--resume', '-r', default='CUHK60_drop_0.2_2_8_lr_0.1_seed_0_a_1t2v_map_best.t', type=str,
                     help='resume from checkpoint')
 parser.add_argument('--test-only', action='store_true', help='test only')
 parser.add_argument('--model_path', default='save_model/', type=str,
