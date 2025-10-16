@@ -253,6 +253,17 @@ class modal_Classifier(nn.Module):
         if self.training:
             return modal_cls  # [batch,3]
 
+class GeMPooling(nn.Module):
+    def __init__(self, p=3.0, eps=1e-12):
+        super(GeMPooling, self).__init__()
+        self.p = nn.Parameter(torch.ones(1) * p)
+        self.eps = eps
+
+    def forward(self, x):
+        # x shape: (batch, channels, spatial_dims)
+        return (torch.mean(x ** self.p.clamp(min=1e-6), dim=-1) + self.eps) ** (1. / self.p.clamp(min=1e-6))
+
+
 class embed_net(nn.Module):
     def __init__(self,  low_dim,  class_num, drop=0.2, part = 3, alpha=0.2, nheads=4, arch='resnet50', wpa = False):
         super(embed_net, self).__init__()
@@ -285,12 +296,16 @@ class embed_net(nn.Module):
         self.lstm = nn.LSTM(2048, 2048, 2)
         self.temporal_feat_learning = temporal_feat_learning()
 
+        # 添加可学习参数p
+        # self.p = nn.Parameter(torch.tensor(3.0))
+        self.gem_pooling = GeMPooling(p=3.0)
+
     def forward(self, x1, x2, adj, modal=0, seq_len = 8, cpa = False):
         b, c, h, w = x1.size()
         t = seq_len
         x1 = x1.view(int(b * seq_len), int(c / seq_len), h, w)
         x2 = x2.view(int(b * seq_len), int(c / seq_len), h, w)
-        
+
         if modal == 0:
             x1 = self.visible_module(x1)
             x2 = self.thermal_module(x2)
@@ -300,25 +315,44 @@ class embed_net(nn.Module):
         elif modal == 2:
             x = self.thermal_module(x2)
 
-        x,_ = self.base_resnet(x)
-        # x,x_t = self.base_resnet(x)
-        # x_l = self.avgpool(x_t).squeeze()
-        # x_l = x_l.view(x_l.size(0) // t, t, -1).permute(1, 0, 2)
+        # x,_ = self.base_resnet(x)
+        # # x,x_t = self.base_resnet(x)
+        # # x_l = self.avgpool(x_t).squeeze()
+        # # x_l = x_l.view(x_l.size(0) // t, t, -1).permute(1, 0, 2)
+        #
+        # x_h = self.avgpool(x).squeeze()
+        # x_h = x_h.view(x_h.size(0)//t, t, -1).permute(1, 0, 2) # 6 32 2048
+        #
+        # x_h = x_h.mean(dim=0) # 32 2048 修改后新增代码
+        #
+        # # h0 = torch.zeros(2, x_l.shape[1], x_l.shape[2]).cuda()
+        # # c0 = torch.zeros(2, x_l.shape[1], x_l.shape[2]).cuda()
+        # # if self.training: self.lstm.flatten_parameters()
+        # # output, (hn, cn) = self.lstm(x_l, (h0, c0))
+        # # t = output[-1]
+        # # x_pool = self.temporal_feat_learning(t,x_l,x_h)
+        # feat  = self.bottleneck(x_h)
+        #
+        # if self.training:
+        #     return x_h, self.classifier(feat)
+        # else:
+        #     return self.l2norm(feat)
 
-        x_h = self.avgpool(x).squeeze()
-        x_h = x_h.view(x_h.size(0)//t, t, -1).permute(1, 0, 2) # 6 32 2048
+        x, _ = self.base_resnet(x)
 
-        x_h = x_h.mean(dim=0) # 32 2048 修改后新增代码
-
-        # h0 = torch.zeros(2, x_l.shape[1], x_l.shape[2]).cuda()
-        # c0 = torch.zeros(2, x_l.shape[1], x_l.shape[2]).cuda()
-        # if self.training: self.lstm.flatten_parameters()
-        # output, (hn, cn) = self.lstm(x_l, (h0, c0))
-        # t = output[-1]
-        # x_pool = self.temporal_feat_learning(t,x_l,x_h)
-        feat  = self.bottleneck(x_h)
+        b, c, h, w = x.shape
+        x = x.view(b, c, -1)
+        # p = 3.0
+        # x_pool =(torch.mean(x ** p, dim=-1) + 1e-12) ** (1 / p)
+        # x_pool =(torch.mean(x ** self.p, dim=-1) + 1e-12) ** (1 / self.p)  # 添加可学习参数p
+        x_pool = self.gem_pooling(x) # 把GeM封装成一个类。添加可学习参数p
+        # x_pool = self.avgpool(x).squeeze()
+        x_pool = x_pool.view(x_pool.size(0) // t, t, -1).permute(1, 0, 2)
+        x_pool = torch.squeeze(x_pool, dim=0)
+        x_pool = x_pool.mean(dim=0)
+        feat = self.bottleneck(x_pool)
 
         if self.training:
-            return x_h, self.classifier(feat)
+            return x_pool, self.classifier(feat)
         else:
             return self.l2norm(feat)

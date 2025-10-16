@@ -87,7 +87,7 @@ dataset = args.dataset
 np.random.seed(1)
 
 #添加
-seq_lenth = 6
+seq_lenth = 14
 test_batch = 32
 data_set = VCM()
 log_path = args.log_path + 'VCM_log/'

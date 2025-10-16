@@ -49,7 +49,7 @@ parser.add_argument('--img_w', default=144, type=int,
                     metavar='imgw', help='img width')
 parser.add_argument('--img_h', default=288, type=int,
                     metavar='imgh', help='img height')
-parser.add_argument('--batch-size', default=2, type=int,
+parser.add_argument('--batch-size', default=4, type=int,
                     metavar='B', help='training batch size')
 parser.add_argument('--test-batch', default=64, type=int,
                     metavar='tb', help='testing batch size')
@@ -88,7 +88,7 @@ cudnn.benchmark = True
 dataset = args.dataset
 
 #添加
-seq_lenth = 6
+seq_lenth = 14
 test_batch = 32
 data_set = VCM()
 log_path = args.log_path + 'VCM_log/'
